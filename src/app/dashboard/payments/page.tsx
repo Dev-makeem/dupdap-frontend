@@ -8,6 +8,7 @@ import { paymentsApi } from '@/lib/api';
 import { formatUsd, formatDate, PAYMENT_STATUS_COLORS, STATUS_ICONS, DEFAULT_STATUS_COLOR } from '@/lib/utils';
 import { FormField } from '@/components/FormField';
 import Modal from '@/components/Modal';
+import PaymentDetailPanel from '@/components/PaymentDetailPanel';
 import { SkeletonList } from '@/components/Skeleton';
 import { getErrorMessage } from '@/lib/errors';
 import type { Payment } from '@/lib/types';
@@ -107,6 +108,7 @@ export default function PaymentsPage() {
   const [form, setForm] = useState({ amountUsd: '', description: '', customerEmail: '', expiryMinutes: '30' });
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [detailPayment, setDetailPayment] = useState<Payment | null>(null);
 
   const load = async (p = 1) => {
     setLoading(true);
@@ -282,6 +284,8 @@ export default function PaymentsPage() {
         )}
       </Modal>
 
+      <PaymentDetailPanel payment={detailPayment} onClose={() => setDetailPayment(null)} />
+
       <div className="card">
         {error ? (
           <div data-testid="payments-error" className="px-6 py-4 text-sm text-red-500">
@@ -297,7 +301,7 @@ export default function PaymentsPage() {
             payments.map((p) => (
               <div key={p.id} className="px-6 py-4 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs text-gray-500">{p.reference}</span>
+                  <button type="button" data-testid="mobile-payment-details" onClick={() => setDetailPayment(p)} className="font-mono text-xs text-gray-500 hover:underline">{p.reference}</button>
                   <PaymentStatusBadge status={p.status} />
                 </div>
                 <div className="font-semibold">{formatUsd(p.amountUsd)}</div>
@@ -336,7 +340,7 @@ export default function PaymentsPage() {
               ) : (
                 payments.map((p) => (
                   <tr key={p.id} data-testid={`payment-row-${p.id}`} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-mono text-xs">{p.reference}</td>
+                    <td className="px-6 py-4 font-mono text-xs"><button type="button" data-testid={`payment-details-button-${p.id}`} onClick={() => setDetailPayment(p)} className="hover:underline">{p.reference}</button></td>
                     <td className="px-6 py-4 font-semibold">{formatUsd(p.amountUsd)}</td>
                     <td className="px-6 py-4">
                       <PaymentStatusBadge status={p.status} testId="payment-status-badge" />
